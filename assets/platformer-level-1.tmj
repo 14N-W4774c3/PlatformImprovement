@@ -37,9 +37,152 @@
          "width":48,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":3,
+         "name":"Objects",
+         "objects":[
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":47,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":181.952,
+                 "y":289.767
+                }, 
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":48,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":268.748,
+                 "y":199.197
+                }, 
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":49,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":360.073,
+                 "y":127.496
+                }, 
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":50,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":557.062,
+                 "y":162.214
+                }, 
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":51,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":683.86,
+                 "y":127.496
+                }, 
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":52,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":757.071,
+                 "y":267.879
+                }, 
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":53,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":609.895,
+                 "y":324.485
+                }, 
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":54,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":396.301,
+                 "y":286.748
+                }, 
+                {
+                 "gid":152,
+                 "height":18,
+                 "id":55,
+                 "name":"coin",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":303.466,
+                 "y":359.204
+                }, 
+                {
+                 "height":0,
+                 "id":56,
+                 "name":"spawn",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":44.5302,
+                 "y":234.727
+                }, 
+                {
+                 "gid":68,
+                 "height":18,
+                 "id":57,
+                 "name":"jumpboost",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":684.615,
+                 "y":323.731
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":3,
- "nextobjectid":47,
+ "nextlayerid":4,
+ "nextobjectid":58,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",
@@ -142,7 +285,16 @@
                  "id":34,
                  "properties":[
                         {
-                         "name":"collides",
+                         "name":"water",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":35,
+                 "properties":[
+                        {
+                         "name":"water",
                          "type":"bool",
                          "value":true
                         }]
@@ -229,6 +381,24 @@
                         }]
                 }, 
                 {
+                 "id":54,
+                 "properties":[
+                        {
+                         "name":"water",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":55,
+                 "properties":[
+                        {
+                         "name":"water",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
                  "id":60,
                  "properties":[
                         {
@@ -266,6 +436,24 @@
                 }, 
                 {
                  "id":73,
+                 "properties":[
+                        {
+                         "name":"water",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":74,
+                 "properties":[
+                        {
+                         "name":"water",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":75,
                  "properties":[
                         {
                          "name":"water",
@@ -416,6 +604,18 @@
                          "type":"bool",
                          "value":true
                         }]
+                }, 
+                {
+                 "animation":[
+                        {
+                         "duration":200,
+                         "tileid":151
+                        }, 
+                        {
+                         "duration":200,
+                         "tileid":152
+                        }],
+                 "id":151
                 }],
          "tilewidth":18
         }],

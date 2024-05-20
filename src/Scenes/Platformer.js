@@ -11,6 +11,15 @@ class Platformer extends Phaser.Scene {
         this.JUMP_VELOCITY = -600;
         this.PARTICLE_VELOCITY = 50;
         this.SCALE = 2.0;
+        this.jumpboost = false;
+        this.jumpboostCount = 0;
+    }
+
+    preload(){
+        this.load.scenePlugin('AnimatedTiles', './lib/AnimatedTiles.js', 'animatedTiles', 'animatedTiles');
+        this.load.setPath("./assets/");
+
+        this.load.spritesheet('spriteList', 'tilemap_packed.png', {frameWidth: 18, frameHeight: 18});        
     }
 
     create() {
@@ -18,6 +27,7 @@ class Platformer extends Phaser.Scene {
         // 45 tiles wide and 25 tiles tall.
         this.map = this.add.tilemap("platformer-level-1", 18, 18, 45, 25);
 
+        
         // Add a tileset to the map
         // First parameter: name we gave the tileset in Tiled
         // Second parameter: key for the tilesheet (from this.load.image in Load.js)
@@ -25,27 +35,69 @@ class Platformer extends Phaser.Scene {
 
         // Create a layer
         this.groundLayer = this.map.createLayer("Ground-n-Platforms", this.tileset, 0, 0);
-
+        
         // Make it collidable
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
 
-        // TODO: Add createFromObjects here
-        
+        // Find coins in the "Objects" layer in Phaser
+        // Look for them by finding objects with the name "coin"
+        // Assign the coin texture from the tilemap_sheet sprite sheet
+        // Phaser docs:
+        // https://newdocs.phaser.io/docs/3.80.0/focus/Phaser.Tilemaps.Tilemap-createFromObjects
 
-        // TODO: Add turn into Arcade Physics here
-        
+        this.anims.create({
+            key:'coin',
+            frames: this.anims.generateFrameNumbers('spriteList', {start: 151, end: 152}),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.coins = this.map.createFromObjects("Objects", {
+            name: "coin",
+            key: "tilemap_sheet",
+            frame: 151
+        });
+        this.jumpboost = this.map.createFromObjects("Objects", {
+            name: "jumpboost",
+            key: "tilemap_sheet",
+            frame: 67
+        });
+
+        for (let coin of this.coins){
+            coin.play("coin");
+        }
+
+        this.spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawn");
+
+        // Since createFromObjects returns an array of regular Sprites, we need to convert 
+        // them into Arcade Physics sprites (STATIC_BODY, so they don't move) 
+        this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.jumpboost, Phaser.Physics.Arcade.STATIC_BODY);
+
+        // Create a Phaser group out of the array this.coins
+        // This will be used for collision detection below.
+        this.coinGroup = this.add.group(this.coins);
+        this.jumpboostGroup = this.add.group(this.jumpboost);
 
         // set up player avatar
-        my.sprite.player = this.physics.add.sprite(30, 345, "platformer_characters", "tile_0000.png");
+        my.sprite.player = this.physics.add.sprite(this.spawnPoint.x, this.spawnPoint.y, "platformer_characters", "tile_0000.png");
         my.sprite.player.setCollideWorldBounds(true);
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
-        // TODO: Add coin collision handler
-        
+        // Handle collision detection with coins
+        this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
+            obj2.destroy(); // remove coin on overlap
+        });
+        // EC2: IMPLEMENT PARTICLE SYSTEM FOR JUICING COINS
+        this.physics.add.overlap(my.sprite.player, this.jumpboostGroup, (obj1, obj2) => {
+            obj2.destroy(); // remove powerup on overlap
+            this.jumpboost = true;
+            this.jumpboostCount = 180;
+        });
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -58,33 +110,74 @@ class Platformer extends Phaser.Scene {
             this.physics.world.debugGraphic.clear()
         }, this);
 
-        // TODO: Add movement vfx here
-        
+        my.vfx.walking = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['smoke_03.png', 'smoke_09.png'],
+            // TODO: Try: add random: true
+            scale: {start: 0.03, end: 0.1},
+            // TODO: Try: maxAliveParticles: 8,
+            lifespan: 350,
+            // TODO: Try: gravityY: -400,
+            alpha: {start: 1, end: 0.1}, 
+        });
 
-        // TODO: add camera code here
+        my.vfx.walking.stop();
         
+        // EC4: IMPLEMENT WATER PARTICLES AND WATER DEATH/RESPAWN
 
+        this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+        this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
+        this.cameras.main.setDeadzone(50, 50);
+        this.cameras.main.setZoom(this.SCALE);
+        
+        this.animatedTiles.init(this.map);
     }
 
     update() {
+        if (this.jumpboostCount > 0){
+            this.jumpboostCount -= 1;
+        }
+        if (this.jumpboostCount == 0){
+            this.jumpboost = false;
+        }
+
         if(cursors.left.isDown) {
             my.sprite.player.setAccelerationX(-this.ACCELERATION);
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
-            // TODO: add particle following code here
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+
+            my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+
+            // Only play smoke effect if touching the ground
+
+            if (my.sprite.player.body.blocked.down) {
+
+                my.vfx.walking.start();
+
+            }
 
         } else if(cursors.right.isDown) {
             my.sprite.player.setAccelerationX(this.ACCELERATION);
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
-            // TODO: add particle following code here
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+
+            my.vfx.walking.setParticleSpeed(-this.PARTICLE_VELOCITY, 0);
+
+            // Only play smoke effect if touching the ground
+
+            if (my.sprite.player.body.blocked.down) {
+
+                my.vfx.walking.start();
+
+            }
 
         } else {
             // Set acceleration to 0 and have DRAG take over
             my.sprite.player.setAccelerationX(0);
             my.sprite.player.setDragX(this.DRAG);
             my.sprite.player.anims.play('idle');
-            // TODO: have the vfx stop playing
+            my.vfx.walking.stop();
         }
 
         // player jump
@@ -93,7 +186,12 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.anims.play('jump');
         }
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
-            my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+            if (this.jumpboost){
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY*1.5);
+            }
+            else {
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+            }
         }
 
         if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
