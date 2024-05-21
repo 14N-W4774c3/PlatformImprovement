@@ -13,6 +13,7 @@ class Platformer extends Phaser.Scene {
         this.SCALE = 2.0;
         this.jumpboost = false;
         this.jumpboostCount = 0;
+        this.score = 0;
     }
 
     preload(){
@@ -27,6 +28,12 @@ class Platformer extends Phaser.Scene {
         // 45 tiles wide and 25 tiles tall.
         this.map = this.add.tilemap("platformer-level-1", 18, 18, 45, 25);
 
+        // EC3-1 - Score Text Creation
+        this.scoreTrackerText = this.add.text(25, 25, "Score: "+this.score);
+        this.scoreTrackerText.setScrollFactor(1);
+        // NOTE: Scroll Factor does not appear to work.  This should make the text move with the camera.
+        // Phaser Docs claim it should.  Phaser Forums claim it should.  It does not.
+        // No errors in the console, though, so just the irritation of incorrect behavior.
         
         // Add a tileset to the map
         // First parameter: name we gave the tileset in Tiled
@@ -47,6 +54,7 @@ class Platformer extends Phaser.Scene {
         // Phaser docs:
         // https://newdocs.phaser.io/docs/3.80.0/focus/Phaser.Tilemaps.Tilemap-createFromObjects
 
+        // EC3-1 - Coin Animation
         this.anims.create({
             key:'coin',
             frames: this.anims.generateFrameNumbers('spriteList', {start: 151, end: 152}),
@@ -59,26 +67,33 @@ class Platformer extends Phaser.Scene {
             key: "tilemap_sheet",
             frame: 151
         });
+
+        // EC1-2 - Jump Boost Creation
         this.jumpboost = this.map.createFromObjects("Objects", {
             name: "jumpboost",
             key: "tilemap_sheet",
             frame: 67
         });
 
+        // EC3-2 - Coin Animation Implementation
         for (let coin of this.coins){
             coin.play("coin");
         }
 
+        // EC1-1 - Spawn Point Creation
         this.spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawn");
 
         // Since createFromObjects returns an array of regular Sprites, we need to convert 
         // them into Arcade Physics sprites (STATIC_BODY, so they don't move) 
         this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
-        this.physics.world.enable(this.jumpboost, Phaser.Physics.Arcade.STATIC_BODY);
+
 
         // Create a Phaser group out of the array this.coins
         // This will be used for collision detection below.
         this.coinGroup = this.add.group(this.coins);
+
+        // EC1-4 - Jump Boost Physics Implementation
+        this.physics.world.enable(this.jumpboost, Phaser.Physics.Arcade.STATIC_BODY);
         this.jumpboostGroup = this.add.group(this.jumpboost);
 
         // set up player avatar
@@ -88,11 +103,31 @@ class Platformer extends Phaser.Scene {
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
-        // Handle collision detection with coins
-        this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
-            obj2.destroy(); // remove coin on overlap
+        // EC2-1 - Coin VFX Creation
+        my.vfx.coins = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['star_01.png', 'star_02.png', 'star_03.png'],
+            scale: {start: 0.03, end: 0.1},
+            maxAliveParticles: 8,
+            lifespan: 350,
+            gravityY: -100,
+            alpha: {start: 1, end: 0.1}, 
         });
-        // EC2: IMPLEMENT PARTICLE SYSTEM FOR JUICING COINS
+        my.vfx.coins.stop();
+        this.coinCounter = 0;
+
+        // Handle collision detection with coins
+        // EC2-2 - Coin VFX Implementation
+        this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
+            my.vfx.coins.setX(obj2.x);
+            my.vfx.coins.setY(obj2.y);
+            my.vfx.coins.start();
+            this.coinCounter = 30;
+            obj2.destroy(); // remove coin on overlap
+            this.score += 100;
+            this.scoreTrackerText.setText("Score: "+this.score)
+        });
+
+        // EC1-5 - Jump Boost Collision Implementation
         this.physics.add.overlap(my.sprite.player, this.jumpboostGroup, (obj1, obj2) => {
             obj2.destroy(); // remove powerup on overlap
             this.jumpboost = true;
@@ -128,6 +163,7 @@ class Platformer extends Phaser.Scene {
         this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
         this.cameras.main.setDeadzone(50, 50);
         this.cameras.main.setZoom(this.SCALE);
+
         
         this.animatedTiles.init(this.map);
     }
@@ -138,6 +174,12 @@ class Platformer extends Phaser.Scene {
         }
         if (this.jumpboostCount == 0){
             this.jumpboost = false;
+        }
+        if (this.coinCounter > 0){
+            this.coinCounter -= 1;
+        }
+        if (this.coinCounter == 0){
+            my.vfx.coins.stop();
         }
 
         if(cursors.left.isDown) {

@@ -6,4 +6,5 @@ Visual assets courtesy of [Kenny Assets](https://kenney.nl/assets), with gratitu
 
 Extra Credit Completed:
 EC1
+EC2 (score text does not follow camera, but it is displayed onscreen)
 EC3
