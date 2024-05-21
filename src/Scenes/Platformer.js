@@ -28,7 +28,7 @@ class Platformer extends Phaser.Scene {
         // 45 tiles wide and 25 tiles tall.
         this.map = this.add.tilemap("platformer-level-1", 18, 18, 45, 25);
 
-        // EC3-1 - Score Text Creation
+        // EC2-1 - Score Text Creation
         this.scoreTrackerText = this.add.text(25, 25, "Score: "+this.score);
         this.scoreTrackerText.setScrollFactor(1);
         // NOTE: Scroll Factor does not appear to work.  This should make the text move with the camera.
@@ -103,7 +103,7 @@ class Platformer extends Phaser.Scene {
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
-        // EC2-1 - Coin VFX Creation
+        // EC2-2 - Coin VFX Creation
         my.vfx.coins = this.add.particles(0, 0, "kenny-particles", {
             frame: ['star_01.png', 'star_02.png', 'star_03.png'],
             scale: {start: 0.03, end: 0.1},
@@ -116,7 +116,7 @@ class Platformer extends Phaser.Scene {
         this.coinCounter = 0;
 
         // Handle collision detection with coins
-        // EC2-2 - Coin VFX Implementation
+        // EC2-3 - Coin VFX Implementation
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
             my.vfx.coins.setX(obj2.x);
             my.vfx.coins.setY(obj2.y);
